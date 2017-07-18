@@ -5,8 +5,8 @@ from utility import my_bin, my_hex
 
 class CheckSum(object):
     def __init__(self, data, check_method='crc16'):
-        self.data = data.split()
-        self.data = map(lambda x:int(x,16), self.data)
+        # self.data = data.split()
+        self.data = map(lambda x:int(x,16), data)
         self.check_method = check_method
 
     def cal_check(self):
@@ -24,5 +24,6 @@ class CheckSum(object):
         return my_hex(crc_reg, is_reverse=True)
 
 if __name__ == "__main__":
-    check_sum = CheckSum('01 03 00 00 00 01')
+    # check_sum = CheckSum('01 03 00 00 00 01')
+    check_sum = CheckSum(['01','03','00','00','00','01'])
     print check_sum.cal_check()

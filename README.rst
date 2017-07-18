@@ -32,14 +32,25 @@ utility.py 一些常用的方法集合
 使用方法
 --------
 
-导入库monitor::
+导入库monitor: ::
 
     >>> import monitor
 
-开启模拟modbus会包工具::
+开启模拟modbus回包工具:
+首先使用vspd绑定串口com3与com103,
+然后导入模块
+::
+    
+    >>> from monitor import simulate_modbus
 
-    >>> monitor.simulate_modbus('com103')
+    >>> sm = simulate_modbus.SimulateModbus('com103')
 
+    >>> sm.start()
+
+接下来使用commix软件打开串口com3,组包命令如：**01 03 00 00 00 01** 选择modbusRTU校验，点击发送，
+即可看到回包数据。
+
+使用**ctrl + C**结束。
 
 安装
 ----
