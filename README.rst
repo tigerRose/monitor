@@ -29,6 +29,20 @@ simulate_modbus.py 模拟modbus回包，由于目前没有接入实际设备，�
 
 utility.py 一些常用的方法集合
 
+准备
+----
+
+使用前需要做一些配置工作.
+1 创建数据库::
+
+    >>> python manage.py db upgrade
+
+2 设置邮件相关配置::
+
+    >>> export MAIL_USERNAME=<Gmail username>
+    >>> export MAIL_PASSWORD=<Gmail password>
+    >>> export FLASKY_ADMIN=<your-email-address>
+
 使用方法
 --------
 
