@@ -1,0 +1,39 @@
+｛
+
+    "device":
+    {
+        "id":"001",
+        "description":"伊顿UPS 5000",
+        "vender":"伊顿",
+        "type":"UPS",
+        "model":"5000",
+        "protocol":"modbus",
+    }，
+
+    "spots":
+    [
+        {
+            "id":"1",
+            "spot_type":"1",
+            "name":"A相电压",
+            “unit”:"V",
+            "value_type":"float",
+            "precision":"2",
+            "range":"-1000,1000",
+            “ratio”:"0.1",
+            "mapper":""
+        },
+        {
+            "id":"2",
+            "spot_type":"2",
+            "name":"开关机状态",
+            “unit”:"",
+            "value_type":"int",
+            "precision":"",
+            "range":"0,1",
+            “ratio”:"1",
+            "mapper":"0=开机;1=关机"
+        }
+    ]
+
+｝
