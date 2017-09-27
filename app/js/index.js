@@ -23,10 +23,48 @@ function addItems() {
     });            
 };  
 
+function add_device_button() {
+    var device_id = $("#select").val();
+    if (device_id == null)
+        return
+    var device_name = $("#select").find("option:selected").text();
+    console.log(device_id+device_name);
+    var old = $("#add_device_list").val();
+    console.log(old);
+    $("#add_device_list").val(old+device_id+device_name+";");
+}
+
+function new_project_button() {
+    var project_name = $("#project_name").val();
+    var devices_name = $("#add_device_list").val();
+    console.log(project_name);
+    console.log(devices_name);
+    $.ajax({
+        url:"/new_project",
+        type:"get",
+        dataType:"json",
+        data:{"project_name":project_name, "devices_name":devices_name},
+        success:function (data) {
+            console.log("new project success, redirect index.html");
+            $.ajax({
+                url:"/",
+                type:"get",
+                dataType:"json",
+                data:{"is_exists_project":true}
+            })
+            
+        },
+        error:function (data) {
+            console.log(data);
+        }
+    })
+}
+
 $().ready(function(){
+
     //////发送请求 请求数据 放到页面
     $(".create_project .button").on("click",function () {
-        var device_id = $("#select").val()
+        var device_id = $("#select").val();
         $.ajax({
             url:"/create_project",
             type:"GET",

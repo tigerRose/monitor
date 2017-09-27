@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<script src="../js/jquery-1.11.0.js"></script>
+<script src="../js/index.js"></script> 
+{% endblock %}
+
+{% block title %}Flasky{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Hello, {% if current_user.is_authenticated %}{{ current_user.username }}{% else %}Stranger{% endif %}!</h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="well">
+    <h3>请填写以下表单并点击new按钮</h3>
+    <form class="form-horizontal" action="" method="post" name="new_project">
+        {{ form.hidden_tag() }}
+        <div class="control-group">
+            <label class="control-label" for="project_name">project_name:</label>
+            <div class="controls">
+                {{ form.project_name(maxlength=64, class="span4")}}
+            </div>
+        </div>
+
+        {##
+        <div class="control-group">
+            <a href="javascript:void(0);" onclick="addItems()"><span>高级查询</span></a>
+            <select id="select">
+            </select>
+        </div>
+        <div class="control-group">
+            <a href="javascript:void(0);" onclick="add_device_button()"><button class="add_device_button">选中此设备</button></a>
+        </div>
+        ##}
+
+        <div class="control-group">
+            <label class="control-label" for="devices_name">devices name list:</label>
+            <div class="controls" id="add_device_list">
+                {{ form.devices_name(maxlength=64, class="span4")}}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="controls">
+                <input class="btn btn-primary" type="submit" value="new">
+            </div>
+        </div>
+    </form>
+
+</div>
+<div class="create_project">
+
+    <!--
+    <form>
+        <fieldset>
+            <legend>工程信息</legend>
+            工程名：<input type="text" name="project_name" value="Slina的家">
+            <br>
+            <a href="javascript:void(0);" onclick="addItems()"><span>高级查询</span></a>
+            <select id="select">
+            </select>
+            <br>
+            <a href="javascript:void(0);" onclick="add_device_button()"><button class="add_device_button">选中此设备</button></a>
+
+            <br>
+            待添加设备列表：<input type="text" id="add_device_list" name="add_device_list" value="">
+
+            <br>
+            <input type="submit" value="新建项目">
+        </fieldset>
+    </form>
+    <form name="newproject">
+    <fieldset>
+        <legend>工程信息</legend>
+        工程名：<input type="text" id="project_name" name="project_name" value="Slina">
+        <br>
+        <a href="javascript:void(0);" onclick="addItems()"><span>高级查询</span></a>
+        <select id="select">
+        </select>
+        <br>
+        <a href="javascript:void(0);" onclick="add_device_button()"><button class="add_device_button">选中此设备</button></a>
+
+        <br>
+        待添加设备列表：<input type="text" id="add_device_list" name="add_device_list" value="">
+
+        <br>
+        <a href="javascript:void(0);" onclick="new_project_button()"><button class="new_project_button">新建项目</button></a>
+        {##
+        <a href="{{ url_for('main.new_project') }}"><button class="new_project_button">新建项目</button></a>
+        ##}
+        <br>
+    </fieldset>
+    </form>
+    --!>
+</div>
+{% endblock %}

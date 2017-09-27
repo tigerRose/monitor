@@ -1,11 +1,11 @@
 {
     "device":
     {
-        "id":"001",
-        "description":"伊顿UPS 5000",
-        "vender":"伊顿",
-        "type":"UPS",
-        "model":"5000",
+        "id":"002",
+        "description":"美的KT 9300",
+        "vender":"美的",
+        "type":"KT",
+        "model":"9300",
         "protocol":"modbus"
     },
     "spots":
@@ -13,11 +13,11 @@
         {
             "id":"1",
             "spot_type":"1",
-            "name":"A相电压",
-            "unit":"V",
+            "name":"温度",
+            "unit":"ºC",
             "value_type":"float",
             "precision":"2",
-            "range":"-1000,1000",
+            "range":"-10,50",
             "ratio":"0.1",
             "mapper":"",
             "command":"03",

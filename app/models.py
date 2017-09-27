@@ -58,3 +58,16 @@ class User(UserMixin, db.Model):
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+class ProjectInfo(db.Model):
+    __tablename__ = 'project_info'
+    id = db.Column(db.Integer, primary_key=True)
+    device_id = db.Column(db.String(5))
+    device_name = db.Column(db.String(64))
+    project_name = db.Column(db.String(64))
+    device_com = db.Column(db.String(64))
+    relation_table = db.Column(db.String(64))
+
+    def __repr__(self):
+        return '<device_id %r>' % self.device_id
