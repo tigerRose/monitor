@@ -67,7 +67,34 @@ class ProjectInfo(db.Model):
     device_name = db.Column(db.String(64))
     project_name = db.Column(db.String(64))
     device_com = db.Column(db.String(64))
-    relation_table = db.Column(db.String(64))
+    # relation_table = db.Column(db.String(64))
+    protocol = db.Column(db.String(64))
 
     def __repr__(self):
         return '<device_id %r>' % self.device_id
+
+class AnalogInfo(db.Model):
+    __tablename__ = 'analog_info'
+    id = db.Column(db.Integer, primary_key=True)
+    device_id = db.Column(db.String(5))
+    name = db.Column(db.String(64))
+    unit = db.Column(db.String(64))
+    value_type = db.Column(db.String(64))
+    precision = db.Column(db.String(64))
+    min_value = db.Column(db.String(64))
+    max_value = db.Column(db.String(64))
+    ratio = db.Column(db.String(64))
+    command = db.Column(db.String(64))
+    cmd_param = db.Column(db.String(64))
+    cmd_length = db.Column(db.String(2))
+
+class DigitInfo(db.Model):
+    __tablename__ = 'digit_info'
+    id = db.Column(db.Integer, primary_key=True)
+    device_id = db.Column(db.String(5))
+    name = db.Column(db.String(64))
+    ratio = db.Column(db.String(64))
+    mapper = db.Column(db.String(64))
+    command = db.Column(db.String(64))
+    cmd_param = db.Column(db.String(64))
+    cmd_length = db.Column(db.String(2))

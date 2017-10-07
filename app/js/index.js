@@ -60,6 +60,21 @@ function new_project_button() {
     })
 }
 
+//function displayTab() {
+//    console.log($(this));
+//  $(this).tab('show');
+//}
+
+//$('#myTab a').click(function () {
+//  //e.preventDefault();
+//  $(this).tab('show');
+//})
+
+$(function () {
+    $('#myTab a:last').tab('show');
+})
+
+
 $().ready(function(){
 
     //////发送请求 请求数据 放到页面

@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for
 from . import main
 from .forms import NewProjectForm
-from ..models import db, ProjectInfo
+from ..models import db, ProjectInfo, AnalogInfo, DigitInfo
 
 import json
 from flask import request
@@ -29,11 +29,19 @@ def index():
         is_exists_project = request.args['is_exists_project']
     print 'in / is_exists_project %s' % is_exists_project
     """
-    if is_exists_project:
-        return render_template('index.html')
-    else:
-        #return render_template('new_project.html')
+    # devices = db.session.query(ProjectInfo).all()
+    # test display project html
+    devices = {"project_name":"slina", 
+               "devices":[
+                {"id":"001", "name": "KT", "spots":[{"name":"temp", "id":"001"},{"name":"humi", "id":"002"}]},
+                {"id":"002", "name": "UPS", "spots":[{"name":"voltage", "id":"001"},{"name":"current", "id":"002"}]}
+                ]}
+
+    if devices is None:
         return redirect(url_for('main.new_project'))
+    else:
+
+        return render_template('index.html', project_data=devices)
 
 @main.route('/create_project')
 def create_project():
@@ -81,15 +89,31 @@ def new_project():
         # print json_data
         if len(db.session.query(ProjectInfo).all()) > 0:
             db.session.query(ProjectInfo).delete()
+        if len(db.session.query(AnalogInfo).all()) > 0:
+            db.session.query(AnalogInfo).delete()
+        if len(db.session.query(DigitInfo).all()) > 0:
+            db.session.query(DigitInfo).delete()
+
         for device_id in json_data:
             device_info = json_data[device_id]
-            project_info = ProjectInfo(device_id=device_id, device_name=device_info['device']['description'], project_name=project_name, device_com=device_com, relation_table=device_id+'_relation')
+            project_info = ProjectInfo(device_id=device_id, device_name=device_info['device']['description'], project_name=project_name, device_com=device_com,protocol=device_info['device']['protocol']) 
             db.session.add(project_info)
         db.session.commit()
 
-        # display index for a existing project
-        global is_exists_project
-        is_exists_project = True
+        # write the device info to db
+        for device_id in json_data:
+            device_info = json_data[device_id]['spots']
+            for spot in device_info:
+                if spot['spot_type'] == '1':
+                    # analog spot
+                    analog_info = AnalogInfo(device_id=device_id,name=spot['name'],unit=spot['unit'],value_type=spot['value_type'],precision=spot['precision'],min_value=spot['range'].split(',')[0],max_value=spot['range'].split(',')[1],ratio=spot['ratio'],command=spot['command'],cmd_param=spot['cmd_param'],cmd_length=spot['cmd_length'])
+                    db.session.add(analog_info)
+                elif spot['spot_type'] == '2':
+                    # digit spot
+                    digit_info = DigitInfo(device_id=device_id,name=spot['name'],ratio=spot['ratio'],command=spot['command'],cmd_param=spot['cmd_param'],cmd_length=spot['cmd_length'],mapper=spot['mapper'])
+                    db.session.add(digit_info)
+        db.session.commit()
+
         return redirect(url_for('main.index'))
     return render_template('new_project.html', form=form)
 

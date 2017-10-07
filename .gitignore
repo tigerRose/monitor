@@ -2,4 +2,4 @@
 *.pyc
 
 # SQLite databases
-.sqlite
+*.sqlite

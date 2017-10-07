@@ -4,6 +4,7 @@
 {{ super() }}
 <script src="../js/jquery-1.11.0.js"></script>
 <script src="../js/index.js"></script> 
+<link href="../css/bootstrap.min.css" rel="stylesheet" media="screen">
 {% endblock %}
 
 {% block title %}Flasky{% endblock %}
@@ -12,6 +13,79 @@
 <div class="page-header">
     <h1>Hello, {% if current_user.is_authenticated %}{{ current_user.username }}{% else %}Stranger{% endif %}!</h1>
 </div>
+{% endblock %}
+
+{% block content %}
+{{ super() }}
+
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span2">
+            <!--sidebar-content-->
+            <h3>{{ project_data["project_name"] }}</h3>
+            <ul id="myTab">
+                {% for device in project_data["devices"] %}
+                <li><a href="#{{ device["id"] }}" onclick="$(this).tab('show')">{{ device["name"] }}</a></li>
+                {##<li><a href="#{{ device["id"] }}" onclick="displayTab()">{{ device["name"] }}</a></li>##}
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="span10">
+            <!--body content-->
+            <div class="tab-content">
+                {% for device in project_data["devices"] %}
+                <div class="tab-pane" id="{{ device["id"] }}">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>id</th>
+                                <th>name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for spot in device["spots"] %}
+                            <tr>
+                                <th>
+                                {{ spot["id"] }}
+                                </th>
+                                <th>
+                                {{ spot["name"] }}
+                                </th>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endfor %}
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+{##
+<div class="well">
+    <h3>工程信息</h3>
+    <form class="form-horizontal" action="" method="post" name="project">
+        <div class="control-group">
+            <label class="control-label" for="project_name">{{ project_data[0].project_name }}</label>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="devices_name">{{ project_data[0].device_name }}</label>
+        </div>
+
+        <div class="control-group">
+            <div class="controls">
+                <input class="btn btn-primary" type="submit" value="开始采集">
+            </div>
+            <div class="controls">
+                <input class="btn" type="submit" value="停止采集">
+            </div>
+        </div>
+    </form>
+
+</div>
+
 <div class="create_project">
     <button class="button">添加设备</button>
 
@@ -25,4 +99,5 @@
     <div class="spots">
     </div>
 </div>
+##}
 {% endblock %}
