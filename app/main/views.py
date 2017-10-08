@@ -29,19 +29,34 @@ def index():
         is_exists_project = request.args['is_exists_project']
     print 'in / is_exists_project %s' % is_exists_project
     """
-    # devices = db.session.query(ProjectInfo).all()
+    devices = db.session.query(ProjectInfo).all()
     # test display project html
-    devices = {"project_name":"slina", 
-               "devices":[
-                {"id":"001", "name": "KT", "spots":[{"name":"temp", "id":"001"},{"name":"humi", "id":"002"}]},
-                {"id":"002", "name": "UPS", "spots":[{"name":"voltage", "id":"001"},{"name":"current", "id":"002"}]}
-                ]}
+    #devices = {"project_name":"slina", 
+    #           "devices":[
+    #            {"id":"001", "name": "KT", "spots":[{"name":"temp", "id":"001"},{"name":"humi", "id":"002"}]},
+    #            {"id":"002", "name": "UPS", "spots":[{"name":"voltage", "id":"001"},{"name":"current", "id":"002"}]}
+    #            ]}
 
     if devices is None:
         return redirect(url_for('main.new_project'))
     else:
+        project_data = {"project_name":"", "devices":[]}
+        project_data["project_name"] = devices[0].project_name
+        for device in devices:
+            curr_dev = {"id":device.device_id, "name":device.device_name, "spots":[]}
+            anas = db.session.query(AnalogInfo).filter_by(device_id=device.device_id).all()
+            cur_id = 1
+            for ana in anas:
+                curr_dev["spots"].append({"id":cur_id, "name":ana.name, "unit":ana.unit, "ratio":ana.ratio, "command":ana.command, "cmd_param":ana.cmd_param})
+                cur_id += 1
+            digs = db.session.query(DigitInfo).filter_by(device_id=device.device_id).all()
+            for dig in digs:
+                curr_dev["spots"].append({"id":cur_id, "name":dig.name, "unit":"-", "ratio":dig.ratio, "command":dig.command, "cmd_param":dig.cmd_param})
+                cur_id += 1
+            project_data["devices"].append(curr_dev)
 
-        return render_template('index.html', project_data=devices)
+        # print project_data
+        return render_template('index.html', project_data=project_data)
 
 @main.route('/create_project')
 def create_project():
