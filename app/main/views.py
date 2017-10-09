@@ -16,6 +16,8 @@ import json
 import codecs
 import random
 
+import redis
+
 app_path = os.path.dirname(basedir)
 devices_path = os.path.join(app_path, 'monitor', 'devices')
 
@@ -43,6 +45,9 @@ def index():
     if devices is None:
         return redirect(url_for('main.new_project'))
     else:
+        # write the info to redis
+        prepare_redis()
+
         project_data = {"project_name":"", "devices":[]}
         project_data["project_name"] = devices[0].project_name
         for device in devices:
@@ -197,25 +202,61 @@ def end():
 
 @main.route("/reload", methods=["GET", "POST"])
 def reload():
-    devices = db.session.query(ProjectInfo).all()
+    print 'in reload'
+    r = redis.Redis(host="127.0.0.1", port=6379, db=0)
+    devices = r.lrange("devices", 0, -1)
+    print 'devices', devices
 
+    project_data = {"devices":[]}
     if devices is None:
-        return redirect(url_for('main.new_project'))
+        pass
     else:
-        project_data = {"project_name":"", "devices":[]}
-        project_data["project_name"] = devices[0].project_name
         for device in devices:
-            curr_dev = {"id":device.device_id, "name":device.device_name, "spots":[]}
-            anas = db.session.query(AnalogInfo).filter_by(device_id=device.device_id).all()
-            cur_id = 1
-            for ana in anas:
-                curr_dev["spots"].append({"id":cur_id, "name":ana.name, "unit":ana.unit, "ratio":ana.ratio, "command":ana.command, "cmd_param":ana.cmd_param, "value":random.randint(218,223), "status":random.choice(['正常', '告警'])})
-                cur_id += 1
-            digs = db.session.query(DigitInfo).filter_by(device_id=device.device_id).all()
-            for dig in digs:
-                curr_dev["spots"].append({"id":cur_id, "name":dig.name, "unit":"-", "ratio":dig.ratio, "command":dig.command, "cmd_param":dig.cmd_param, "value":random.randint(0,2), "status":random.choice(['正常', '告警'])})
-                cur_id += 1
+            curr_dev = {"id":device, "spots":[]}
+            for spot in r.lrange("spots:%s" % device, 0, -1):
+                # print device, spot, "device:%s:spot:%s:value" % (device, spot)
+                value = r.get("device:%s:spot:%s:value" % (device, spot[1:]))
+                if value is None:
+                    value = '-'
+                status = r.get("device:%s:spot:%s:status" % (device, spot[1:]))
+                if status is None:
+                    status = '-'
+                
+                curr_dev["spots"].append({"id":spot[1:], "value":value, "status":status})
             project_data["devices"].append(curr_dev)
+        
+    print project_data
+    return jsonify(project_data)
 
-        # print project_data
-        return jsonify(project_data)
+
+def prepare_redis():
+    devices = db.session.query(ProjectInfo).all()
+    if devices is None:
+        return False
+
+    print 'in prepare_redis'
+    r = redis.Redis(host="127.0.0.1", port=6379, db=0)
+    
+    # clear old data
+    for i in xrange(r.llen("devices")):
+        r.rpop("devices")
+    for device in devices:
+        for i in xrange(r.llen("spots:%s" % device.device_id)):
+            r.rpop("spots:%s" % device.device_id)
+    
+    for device in devices:
+        r.rpush("devices", device.device_id)
+        anas = db.session.query(AnalogInfo).filter_by(device_id=device.device_id).all()
+        cur_id = 1
+        for ana in anas:
+            r.rpush("spots:%s" % device.device_id, "A%d" % cur_id)
+            for attr in ["command", "cmd_param", "cmd_length", "ratio", "value_type", "precision", "min_value", "max_value"]:
+                r.set("device:%s:spot:%d:%s" % (device.device_id, cur_id, attr), ana[attr])
+            cur_id += 1
+        digs = db.session.query(DigitInfo).filter_by(device_id=device.device_id).all()
+        for dig in digs:
+            r.rpush("spots:%s" % device.device_id, "D%d" % cur_id)
+            for attr in ["command", "cmd_param", "cmd_length", "ratio", "mapper"]:
+                r.set("device:%s:spot:%d:%s" % (device.device_id, cur_id, attr), dig[attr])
+            cur_id += 1
+    return r

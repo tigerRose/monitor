@@ -73,6 +73,9 @@ class ProjectInfo(db.Model):
     def __repr__(self):
         return '<device_id %r>' % self.device_id
 
+    def __getitem__(self, key):
+        return self.__dict__[key] if key in self.__dict__ else None
+
 class AnalogInfo(db.Model):
     __tablename__ = 'analog_info'
     id = db.Column(db.Integer, primary_key=True)
@@ -88,6 +91,9 @@ class AnalogInfo(db.Model):
     cmd_param = db.Column(db.String(64))
     cmd_length = db.Column(db.String(2))
 
+    def __getitem__(self, key):
+        return self.__dict__[key] if key in self.__dict__ else None
+
 class DigitInfo(db.Model):
     __tablename__ = 'digit_info'
     id = db.Column(db.Integer, primary_key=True)
@@ -98,3 +104,6 @@ class DigitInfo(db.Model):
     command = db.Column(db.String(64))
     cmd_param = db.Column(db.String(64))
     cmd_length = db.Column(db.String(2))
+
+    def __getitem__(self, key):
+        return self.__dict__[key] if key in self.__dict__ else None

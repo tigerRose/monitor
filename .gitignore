@@ -3,3 +3,7 @@
 
 # SQLite databases
 *.sqlite
+
+# redis databases
+*.rdb
+
