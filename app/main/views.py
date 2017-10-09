@@ -1,4 +1,6 @@
-from flask import render_template, redirect, url_for
+#-*- coding:utf-8 -*-
+
+from flask import render_template, redirect, url_for, jsonify
 from . import main
 from .forms import NewProjectForm
 from ..models import db, ProjectInfo, AnalogInfo, DigitInfo
@@ -12,6 +14,7 @@ import glob
 import json
 
 import codecs
+import random
 
 app_path = os.path.dirname(basedir)
 devices_path = os.path.join(app_path, 'monitor', 'devices')
@@ -157,3 +160,62 @@ def read_json_info(devices):
 
         data[bname] = dev
     return data
+
+@main.route("/start")
+def start():
+    import pika
+
+    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    channel = connection.channel()
+
+    channel.queue_declare(queue='command')
+
+    channel.basic_publish(exchange='',
+                            routing_key='command',
+                            body='start')
+    print " [x] send command 'start'"
+    connection.close()
+
+    return ''
+
+@main.route("/end")
+def end():
+    import pika
+
+    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    channel = connection.channel()
+
+    channel.queue_declare(queue='command')
+
+    channel.basic_publish(exchange='',
+                            routing_key='command',
+                            body='end')
+    print " [x] send command 'end'"
+    connection.close()
+
+    return ''
+
+@main.route("/reload", methods=["GET", "POST"])
+def reload():
+    devices = db.session.query(ProjectInfo).all()
+
+    if devices is None:
+        return redirect(url_for('main.new_project'))
+    else:
+        project_data = {"project_name":"", "devices":[]}
+        project_data["project_name"] = devices[0].project_name
+        for device in devices:
+            curr_dev = {"id":device.device_id, "name":device.device_name, "spots":[]}
+            anas = db.session.query(AnalogInfo).filter_by(device_id=device.device_id).all()
+            cur_id = 1
+            for ana in anas:
+                curr_dev["spots"].append({"id":cur_id, "name":ana.name, "unit":ana.unit, "ratio":ana.ratio, "command":ana.command, "cmd_param":ana.cmd_param, "value":random.randint(218,223), "status":random.choice(['正常', '告警'])})
+                cur_id += 1
+            digs = db.session.query(DigitInfo).filter_by(device_id=device.device_id).all()
+            for dig in digs:
+                curr_dev["spots"].append({"id":cur_id, "name":dig.name, "unit":"-", "ratio":dig.ratio, "command":dig.command, "cmd_param":dig.cmd_param, "value":random.randint(0,2), "status":random.choice(['正常', '告警'])})
+                cur_id += 1
+            project_data["devices"].append(curr_dev)
+
+        # print project_data
+        return jsonify(project_data)

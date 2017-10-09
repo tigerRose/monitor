@@ -11,8 +11,8 @@
 
 {% block page_content %}
 <div class="page-header">
-    <button class="btn btn-large btn-primary" type="button">开始运行</button>
-    <button class="btn btn-large" type="button">停止运行</button>
+    <button class="btn btn-large btn-primary" type="button" onclick="start()">开始运行</button>
+    <button class="btn btn-large" type="button" onclick="end()">停止运行</button>
 </div>
 {% endblock %}
 
@@ -70,10 +70,10 @@
                                 <th>
                                 {{ spot["cmd_param"] }}
                                 </th>
-                                <th>
+                                <th id="{{ device["id"] }}_{{ spot["id"] }}_value">
                                     -
                                 </th>
-                                <th>
+                                <th id="{{ device["id"] }}_{{ spot["id"] }}_status">
                                     -
                                 </th>
                             </tr>

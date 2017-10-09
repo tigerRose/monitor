@@ -74,6 +74,53 @@ $(function () {
     $('#myTab a:last').tab('show');
 })
 
+function start() {
+    $.ajax({
+        url:"/start",
+        type:"GET",
+    })
+}
+
+function end() {
+    $.ajax({
+        url:"/end",
+        type:"GET",
+    })
+}
+
+function reloadView() {
+    $.ajax({
+        url:"/reload",
+        type:"POST",
+        async:true,
+        success:function(data) {
+            /* data example:
+             * {'project_name': u'Slina', 'devices': [{'id': u'001', 'spots': [{'ratio': u'0.1', 'name': u'A\u76f8\u7535\u538b', 'command': u'03', 'id': 2, 'unit': u'V', 'cmd_param': u'0000'}, {'ratio': u'1', 'name': u'\u5f00\u5173\u673a\u72b6\u6001', 'command': u'03', 'id': 3, 'unit': '-', 'cmd_param': u'0001'}], 'name': u'\u4f0a\u987fUPS 5000'}]}
+             */
+            var devices = data['devices'];
+            var records = ['value', 'status'];
+            for (i=0; i<devices.length; i++){
+                var device = devices[i];
+                var spots = device['spots'];
+                for (j=0; j<spots.length; j++){
+                    var spot = spots[j];
+                    for (n=0; n<records.length; n++){
+                        var record = records[n];
+                        var id = device['id']+"_"+spot['id']+"_"+record;
+                        $("#"+id).text(spot[record]);
+                    }
+                }
+            }
+        },
+        error: function (XMLHttpRequest, txtStatus, errorThrown)
+        {
+            // alert(XMLHttpRequest + "<br>" + txtStatus + "<br>" + errorThrown);
+            clearInterval(int_var);
+        }
+    });
+}
+
+var int_var = setInterval("reloadView()", 5000);
 
 $().ready(function(){
 
