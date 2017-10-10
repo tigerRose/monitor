@@ -6,6 +6,9 @@ import random
 
 import redis
 
+import sys
+sys.path.append(os.path.dirname(__file__))
+
 from PluginManager import PluginManager
 
 def start():
@@ -29,12 +32,18 @@ def start():
     while True:
         print 'in start'
         for device in r.lrange("devices", 0, -1):
+            addr = r.get("addr:%s" % device)
             for spot in r.lrange("spots:%s" % device, 0, -1):
                 command = r.get("device:%s:spot:%s:%s" % (device, spot[1:], 'command'))
                 cmd_param = r.get("device:%s:spot:%s:%s" % (device, spot[1:], 'cmd_param'))
                 cmd_length = r.get("device:%s:spot:%s:%s" % (device, spot[1:], 'cmd_length'))
                 ratio = r.get("device:%s:spot:%s:%s" % (device, spot[1:], 'ratio'))
-                value = plugins[device].get(command, cmd_param, cmd_length)
+
+                value = plugins[device].get(addr, command, cmd_param, cmd_length)
+                if value is None:
+                    print 'device:%s:spot:%s get error' % (device, spot)
+                    continue
+
                 if spot[0] == 'A':
                     value_type = r.get("device:%s:spot:%s:%s" % (device, spot[1:], 'value_type'))
                     precision = r.get("device:%s:spot:%s:%s" % (device, spot[1:], 'precision'))
@@ -50,7 +59,7 @@ def start():
                 r.set("device:%s:spot:%s:value" % (device, spot[1:]), value)
                 r.set("device:%s:spot:%s:status" % (device, spot[1:]), status)
 
-        time.sleep(5)
+        time.sleep(2)
 
     """
     project_data = {"project_name":"", "devices":[]}

@@ -30,6 +30,7 @@ class SimulateModbustcp(object):
 
         while True: 
             client_sock, client_addr = sock.accept()
+            # client_sock.settimeout(self.timeout)
             while True:
                 try:
                     recv_data = client_sock.recv(self.bufsize)
@@ -39,10 +40,12 @@ class SimulateModbustcp(object):
                     break
                 if not recv_data:
                     sleep(self.intervals)
-                    break
+                    continue
 
                 recv_data = map(lambda x: x.encode('hex').upper(), recv_data)
                 print 'recv:', ' '.join(recv_data)
+                if len(recv_data) != 8:
+                    continue
                 addr, cmd = recv_data[0], recv_data[1]
                 recv_len = int(recv_data[4],16) << 8 | int(recv_data[5],16)
 
