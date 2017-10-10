@@ -246,6 +246,9 @@ def prepare_redis():
     
     for device in devices:
         r.rpush("devices", device.device_id)
+        r.set("protocol:%s" % device.device_id, device.protocol)
+        r.set("ip:%s" % device.device_id, device.device_com.split('_')[0])
+        r.set("port:%s" % device.device_id, device.device_com.split('_')[1])
         anas = db.session.query(AnalogInfo).filter_by(device_id=device.device_id).all()
         cur_id = 1
         for ana in anas:

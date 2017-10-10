@@ -1,23 +1,54 @@
 #-*- coding:utf-8 -*-
 
+import os
 import time
 import random
 
 import redis
 
+from PluginManager import PluginManager
+
 def start():
     r = redis.Redis(host="127.0.0.1", port=6379, db=0)
+
+    # load the plugins for every device
+    plugin_manager = PluginManager()
+    plugin_manager.LoadAllPlugin()
+
+    plugins = {}
+    for device in r.lrange("devices", 0, -1):
+        protocol = r.get("protocol:%s" % device)
+
+        plugin = plugin_manager.GetPluginByName(protocol.title())
+
+        host = r.get("ip:%s" % device)
+        port = r.get("port:%s" % device)
+        plugin.init(host, port)
+        plugins[device] = plugin
 
     while True:
         print 'in start'
         for device in r.lrange("devices", 0, -1):
             for spot in r.lrange("spots:%s" % device, 0, -1):
+                command = r.get("device:%s:spot:%s:%s" % (device, spot[1:], 'command'))
+                cmd_param = r.get("device:%s:spot:%s:%s" % (device, spot[1:], 'cmd_param'))
+                cmd_length = r.get("device:%s:spot:%s:%s" % (device, spot[1:], 'cmd_length'))
+                ratio = r.get("device:%s:spot:%s:%s" % (device, spot[1:], 'ratio'))
+                value = plugins[device].get(command, cmd_param, cmd_length)
                 if spot[0] == 'A':
-                    r.set("device:%s:spot:%s:value" % (device, spot[1:]), random.randint(100,300))
-                    r.set("device:%s:spot:%s:status" % (device, spot[1:]), random.choice(["正常","告警"]))
+                    value_type = r.get("device:%s:spot:%s:%s" % (device, spot[1:], 'value_type'))
+                    precision = r.get("device:%s:spot:%s:%s" % (device, spot[1:], 'precision'))
+                    min_value = r.get("device:%s:spot:%s:%s" % (device, spot[1:], 'min_value'))
+                    max_value = r.get("device:%s:spot:%s:%s" % (device, spot[1:], 'max_value'))
+
+                    value, status = plugins[device].transformAnalog(value, ratio, value_type, precision, min_value, max_value)
                 elif spot[0] == 'D':
-                    r.set("device:%s:spot:%s:value" % (device, spot[1:]), random.randint(0,3))
-                    r.set("device:%s:spot:%s:status" % (device, spot[1:]), random.choice(["正常","告警"]))
+                    mapper = r.get("device:%s:spot:%s:%s" % (device, spot[1:], 'mapper'))
+
+                    value, status = plugins[device].transformDigit(value, ratio, mapper)
+
+                r.set("device:%s:spot:%s:value" % (device, spot[1:]), value)
+                r.set("device:%s:spot:%s:status" % (device, spot[1:]), status)
 
         time.sleep(5)
 
